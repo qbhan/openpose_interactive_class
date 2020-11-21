@@ -78,9 +78,9 @@ try:
     # Custom Params (refer to include/openpose/flags.hpp for more parameters)
     params = dict()
     params["model_folder"] = "../../../models/"
-    # params["net_resolution"] = "160x120"
-    # params["hand"] = True
-    # params["hand_detector"] = 2
+    # params["net_resolution"] = "1920x1080"
+    params["hand"] = True
+    params["hand_detector"] = 2
     params["body"] = 1
     # params["face"] = True
     # params["disable_blending"] = True
@@ -102,7 +102,7 @@ try:
 
     # Construct it from system arguments
     # Fixed the handRectangles to only 1 person and 1 big rectangle, don't have to keep changing rectangle
-    handRectangles = [[op.Rectangle(100.0, 150.0, 328.0, 328.0), op.Rectangle(0., 0., 0., 0.)]]
+    handRectangles = [[op.Rectangle(280,24, 1280, 1024), op.Rectangle(0., 0., 0., 0.)]]
     # handRectangles = [[op.Rectangle(0.0, 0.0, 328.0, 328.0), op.Rectangle(0., 0., 0., 0.)]]
 
     opWrapper = op.WrapperPython()
@@ -111,10 +111,10 @@ try:
 
     # Process Image
     datum = op.Datum()
-    datum.handRectangles = handRectangles
+    # datum.handRectangles = handRectangles
     cam = cv2.VideoCapture(0)  # modify here for camera number
-    # cam.set(3, 1280)
-    # cam.set(4, 720)
+    cam.set(3, 1280)
+    cam.set(4, 1024)
     pair_poseKeypoints = [[], []]
     while (cv2.waitKey(1) != 27):
         # Get camera frame
@@ -149,7 +149,7 @@ try:
         # print(left_hand)
         if (moved):
             # cv2.rectangle(frame, (100, 150), (328, 328), (0, 255, 0), 1, 1)
-            cv2.rectangle(frame, (0, 0), (640, 480), (0, 0, 255), 20)
+            cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
         cv2.imshow("Openpose 1.4.0 Webcam", frame)  # datum.cvOutputData
     # Always clean up
     cam.release()
