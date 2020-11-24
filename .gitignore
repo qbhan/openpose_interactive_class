@@ -16,4 +16,5 @@ asdf.py
 *.filters
 *.txt
 *.json
+*.pt
 
