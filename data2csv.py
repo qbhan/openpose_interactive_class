@@ -45,7 +45,7 @@ class gestureThread (threading.Thread):
         gesture = self.gesture
 
         field_names = ['id', 'left', 'right']
-        with open('results/result_' + str(gesture) + '_all' + '.csv', 'w', newline='') as csvfile:
+        with open('results/result_' + str(gesture) + '_'+ str(self.threadID) + '.csv', 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=field_names)
             # Starting OpenPose
             opWrapper = op.WrapperPython()
@@ -89,9 +89,9 @@ class gestureThread (threading.Thread):
                     # print("Right hand keypoints: \n" + right)
                     hand['right'] = right
                     # print('and Keypoints : \n', hand)
-                    lock.acquire()
+                    # lock.acquire()
                     writer.writerow(hand)
-                    lock.release()
+                    # lock.release()
                     # print(hand)
 
                     print(os.path.join(root_dir, gesture, folder, image), "written.")
@@ -159,7 +159,7 @@ class gestureAllThread (threading.Thread):
                     print(hand)
 
                     print(os.path.join(root_dir, gesture, folder, image), "working in progress.")
-        print('FINISH THREAD {}'.format(self.gesture))
+        print('FINISH THREAD {}'.format(self.threadID))
 
 try:
     # Import Openpose (Windows/Ubuntu/OSX)
@@ -226,11 +226,11 @@ try:
     thread_num = 5
     sublen = length//thread_num
     rem = length % thread_num
-    # print(sublen)
+    print(sublen)
     threads = []
     start = 0
     for i in range(thread_num):
-        threads.append(gestureThread(i, gestures[0], folders[start:start + sublen if i != 9 else length+rem]))
+        threads.append(gestureThread(i, gestures[0], folders[start:start + sublen if i != thread_num-1 else length+rem]))
         print(len(folders[start:start + sublen if i != thread_num - 1 else length + rem]))
         start += sublen
 
