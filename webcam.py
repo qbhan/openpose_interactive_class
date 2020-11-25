@@ -3,39 +3,21 @@ import cv2
 import os
 from sys import platform
 import argparse
-# import torch
-# import torch.nn as nn
-# import torch.nn.functional as F
-# import torch.optim as optim
-# from torch.utils.data import Dataset, DataLoader
-
-# Import Openpose (Windows/Ubuntu/OSX)
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# try:
-#     # Windows Import
-#     if platform == "win32":
-#         # Change these variables to point to the correct folder (Release/x64 etc.)
-#         sys.path.append(dir_path + '/../../python/openpose/Release');
-#         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../x64/Release;' + dir_path + '/../../bin;'
-#         import pyopenpose as op
-#         # from openpose import *
-#     else:
-#         # Change these variables to point to the correct folder (Release/x64 etc.)
-#         sys.path.append('../../python');
-#         # If you run `make install` (default path is `/usr/local/python` for Ubuntu), you can also access the OpenPose/python module from there. This will install OpenPose and the python library at your desired installation path. Ensure that this is in your python path in order to use it.
-#         # sys.path.append('/usr/local/python')
-#         from openpose import pyopenpose as op
-#         # from openpose import *
-# except ImportError as e:
-#     print(
-#         'Error: OpenPose library could not be found. Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?')
-#     raise e
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+
+
+def avg_confidence(hand_keypoints):
+    left_avg = sum(hand_keypoints[:, 2]) / 21
+    return left_avg
+
+
+def avg_list_confidence(hand_list):
+    all_avg = 0
+    for i in range(len(hand_list)):
+        all_avg += avg_confidence(hand_list[i])
+    return all_avg / len(hand_list)
 
 class MLPBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -63,9 +45,11 @@ class GestureDetector(nn.Module):
           super(GestureDetector, self).__init__()
           block = MLPBlock
           self.mlp = block(12*21*3, nf)
-          self.fc = nn.Linear(nf, 4) # our gesture dataset is consisted of 5 classes
+          self.fc = nn.Linear(nf, 5) # our gesture dataset is consisted of 5 classes
 
     def forward(self, x):
+        # print(x.view(x.size()[0], -1).shape)
+        # print(torch.flatten(torch.flatten(x, start_dim=1), start_dim=0).shape)
         output = self.mlp(x.view(x.size()[0], -1))
         output = self.fc(output)
         return output
@@ -76,8 +60,14 @@ def get_hand_gesture(model_name, input, device):
     model.load_state_dict(torch.load(model_name))
     model.eval()
     input = torch.FloatTensor(input).to(device)
+    input = input.unsqueeze(0)
+    # print(input.shape)
     output = model(input)
-    return output.index(max(output))
+    # print(output.shape)
+    pred = output.argmax(dim=1).data[0]
+    # print(pred == 3)
+    prob = output[0][pred].data
+    return prob, pred
 
 
 def distance(prev, curr):
@@ -151,12 +141,12 @@ def main():
         params["hand"] = True
         params["hand_detector"] = 2
         params["body"] = 1
-        params["net_resolution"] = '320x176'
+        params["net_resolution"] = '320x192'  #20*11
         # params["face"] = True
         # params["disable_blending"] = True
         # params["fps_max"] = 5
         handRectangles = [[op.Rectangle(128, 0, 1024, 1024), op.Rectangle(0., 0., 0., 0.)]]
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # device = 'cuda' if torch.cuda.is_available() else 'cpu'
         opWrapper = op.WrapperPython()
         opWrapper.configure(params)
         opWrapper.start()
@@ -176,6 +166,7 @@ def main():
             datum.cvInputData = frame
             opWrapper.emplaceAndPop([datum])
             frame = datum.cvOutputData
+
             if datum.poseKeypoints.shape == ():
                 cv2.imshow("Openpose 1.4.0 Webcam", frame)  # datum.cvOutputData
                 continue
@@ -186,22 +177,43 @@ def main():
 
             # input hand gesture
             # assert len(input_hands) > 12
+            # confidence = avg_confidence(datum.handKeypoints[0][0])
+            # print('Confidence : ', confidence)
+            # if confidence > 0.3:
             if len(input_hands) == 12:
                 del input_hands[0]
             input_hands.append(datum.handKeypoints[0][0])
             # print(len(input_hands))
-
-            # gesture = get_hand_gesture('1.pt', input_hands, device)
-            # print(gesture)
+            prob, gesture = None, None
+            avg = avg_list_confidence(input_hands)
+            # if len(input_hands) == 12 and avg >= 0.1:
+            if len(input_hands) == 12:
+                print('Confidence : ', avg)
+                prob, gesture = get_hand_gesture('normalizev2.pt', input_hands, 'cuda')
+            print(prob, gesture)
 
             if moved:
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (10, 500)
+                fontScale = 1
+                fontColor = (0, 0, 0)
+                lineType = 2
                 cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
+                cv2.putText(frame, 'Hello World!',
+                            bottomLeftCornerOfText,
+                            font,
+                            fontScale,
+                            fontColor,
+                            lineType)
             cv2.imshow("Openpose 1.4.0 Webcam", frame)  # datum.cvOutputData
         # Always clean up
         cam.release()
         cv2.destroyAllWindows()
 
     except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         print(e)
         sys.exit(-1)
 
