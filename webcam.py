@@ -2,21 +2,41 @@ import sys
 import cv2
 import os
 from sys import platform
-import argparse
 
 import torch
 import torch.nn as nn
 
+import http.client
 
-def avg_confidence(hand_keypoints):
+conn = http.client.HTTPSConnection("api.zoom.us")
+
+payload = "{\"message\":\"It's a beautiful day.\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+
+headers = {
+    'content-type': "application/json",
+    'authorization': "Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiIzZWI4M2VhZS05MTY3LTQzMjItYWUwYS0xYzViZDQyY2VmNDUifQ.eyJ2ZXIiOjcsImF1aWQiOiIxYTY5YWM0ZjZiMGUzMTZlOWFmNTI0NDI1YmM1YmYwNyIsImNvZGUiOiJza3RWVGtKQWZsX0FHUHB6dGhLUmNXU0g2MGI1cVZydFEiLCJpc3MiOiJ6bTpjaWQ6TEd2YjAwUndUcXFLVzZ4RVlLQ0NNUSIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJBR1BwenRoS1JjV1NINjBiNXFWcnRRIiwibmJmIjoxNjA2Mjg4ODE0LCJleHAiOjE2MDYyOTI0MTQsImlhdCI6MTYwNjI4ODgxNCwiYWlkIjoiOTRaRFc3NTlTS1dZSzBNSnp3bnJzZyIsImp0aSI6IjUxNTdjM2ViLTdjZDAtNDcxNS1iZmEzLWM5N2UzNTVkMjNhMCJ9.iCstDZ4D8ngZUnXqYnvbFQzAzZMMwAxNY8xIdSrWcZZQUWkYsZGJCFUVroR3KF6nB4Rr8VuD-Kq7QgU6IorfUw","token_type":"bearer","refresh_token":"eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiJkOTQ5YjU0ZS04MTVmLTRhYmItOWM1YS0yM2RiYmJiN2IxNjMifQ.eyJ2ZXIiOjcsImF1aWQiOiIxYTY5YWM0ZjZiMGUzMTZlOWFmNTI0NDI1YmM1YmYwNyIsImNvZGUiOiJza3RWVGtKQWZsX0FHUHB6dGhLUmNXU0g2MGI1cVZydFEiLCJpc3MiOiJ6bTpjaWQ6TEd2YjAwUndUcXFLVzZ4RVlLQ0NNUSIsImdubyI6MCwidHlwZSI6MSwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJBR1BwenRoS1JjV1NINjBiNXFWcnRRIiwibmJmIjoxNjA2Mjg4ODE0LCJleHAiOjIwNzkzMjg4MTQsImlhdCI6MTYwNjI4ODgxNCwiYWlkIjoiOTRaRFc3NTlTS1dZSzBNSnp3bnJzZyIsImp0aSI6IjAyZDQ3NjJiLWIwMTgtNDYyZS1iYjQ0LWIyNDE1Yzk0NWRmYSJ9.cdmnIZoYYbgY7b7itfXQvcmsUUNYN6NcDZlrLBdRb3D4-ktgo1JdKSGIq3o_01LjrR1lZYacZPtrBS-PQb5dcw"
+    }
+
+# conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+#
+# res = conn.getresponse()
+# data = res.read()
+#
+# print(data.decode("utf-8"))
+
+
+def avg_hand_confidence(hand_keypoints):
     left_avg = sum(hand_keypoints[:, 2]) / 21
     return left_avg
 
+def avg_pose_confidence(pose_keypoints):
+    avg = sum(pose_keypoints[:, 2]) / 25
+    return avg
 
 def avg_list_confidence(hand_list):
     all_avg = 0
     for i in range(len(hand_list)):
-        all_avg += avg_confidence(hand_list[i])
+        all_avg += avg_hand_confidence(hand_list[i])
     return all_avg / len(hand_list)
 
 class MLPBlock(nn.Module):
@@ -79,13 +99,9 @@ def metric(pair_poseKeypoints):
     prev_poseKeypoints =  pair_poseKeypoints[0]
     poseKeypoints = pair_poseKeypoints[1]
 
-    # print('insie metric', type(prev_poseKeypoints))
-
     if len(prev_poseKeypoints) == 0 or len(poseKeypoints) == 0:
         return -1000
-    # print(len(prev_poseKeypoints), len(poseKeypoints))
     prev_nose, nose = prev_poseKeypoints[0], poseKeypoints[0]
-    # print(prev_nose, nose)
     prev_neck, neck = prev_poseKeypoints[1], poseKeypoints[1]
     prev_right_shoulder, right_shoulder = prev_poseKeypoints[2], poseKeypoints[2]
     prev_left_shoulder, left_shoulder = prev_poseKeypoints[5], poseKeypoints[5]
@@ -137,7 +153,6 @@ def main():
         # Custom Params (refer to include/openpose/flags.hpp for more parameters)
         params = dict()
         params["model_folder"] = "../../../models/"
-        # params["net_resolution"] = "1920x1080"
         params["hand"] = True
         params["hand_detector"] = 2
         params["body"] = 1
@@ -160,46 +175,89 @@ def main():
         pair_poseKeypoints = [[], []]
         input_hands = []
         while (cv2.waitKey(1) != 27):
-            # Get camera frame
-            # print('Another Frame')
+
+
             ret, frame = cam.read()
             datum.cvInputData = frame
             opWrapper.emplaceAndPop([datum])
             frame = datum.cvOutputData
 
+            '''If Person not in Camera'''
             if datum.poseKeypoints.shape == ():
-                cv2.imshow("Openpose 1.4.0 Webcam", frame)  # datum.cvOutputData
+                conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+
+                res = conn.getresponse()
+                data = res.read()
+
+                print(data.decode("utf-8"))
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (550, 500)
+                fontScale = 2
+                fontColor = (255, 0, 0)
+                lineType = 2
+                cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
+                cv2.putText(frame, 'Absent!',
+                            bottomLeftCornerOfText,
+                            font,
+                            fontScale,
+                            fontColor,
+                            lineType)
+                cv2.imshow("Openpose 1.4.0 Webcam", frame)
                 continue
+
+            '''Evaluate Movement & Confidence'''
             del pair_poseKeypoints[0]
             pair_poseKeypoints.append(datum.poseKeypoints[0])
+            body_confidence_avg = avg_pose_confidence(datum.poseKeypoints[0])
+            # print(body_confidence_avg)
             moved = metric(pair_poseKeypoints)
-            # print(moved)
 
-            # input hand gesture
-            # assert len(input_hands) > 12
-            # confidence = avg_confidence(datum.handKeypoints[0][0])
-            # print('Confidence : ', confidence)
-            # if confidence > 0.3:
+            '''Evaluate Hand Gesture'''
             if len(input_hands) == 12:
                 del input_hands[0]
             input_hands.append(datum.handKeypoints[0][0])
             # print(len(input_hands))
             prob, gesture = None, None
-            avg = avg_list_confidence(input_hands)
+            hand_confidence_avg = avg_list_confidence(input_hands)
             # if len(input_hands) == 12 and avg >= 0.1:
             if len(input_hands) == 12:
-                print('Confidence : ', avg)
+                print('Confidence : ', hand_confidence_avg)
                 prob, gesture = get_hand_gesture('normalizev2.pt', input_hands, 'cuda')
             print(prob, gesture)
 
-            if moved:
+
+
+            '''Output Recognition Results'''
+            print_msg = False
+            fontColor = None
+            fontScale = None
+            msg_on_screen = None
+
+            if gesture == 1:
+                print_msg = True
+
+            elif gesture == 2:
+                print_msg = True
+
+            elif gesture == 3:
+                print_msg = True
+
+            elif moved:
+                print_msg = True
+                conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+
+                res = conn.getresponse()
+                data = res.read()
+
+            if print_msg:
+                print(data.decode("utf-8"))
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                bottomLeftCornerOfText = (10, 500)
-                fontScale = 1
-                fontColor = (0, 0, 0)
+                bottomLeftCornerOfText = (550, 500)
+                fontScale = 2
+                fontColor = (255, 0, 0)
                 lineType = 2
                 cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
-                cv2.putText(frame, 'Hello World!',
+                cv2.putText(frame, 'Movement Detected',
                             bottomLeftCornerOfText,
                             font,
                             fontScale,
