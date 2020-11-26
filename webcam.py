@@ -2,6 +2,7 @@ import sys
 import cv2
 import os
 from sys import platform
+import time
 
 import torch
 import torch.nn as nn
@@ -29,15 +30,28 @@ def avg_hand_confidence(hand_keypoints):
     left_avg = sum(hand_keypoints[:, 2]) / 21
     return left_avg
 
+
 def avg_pose_confidence(pose_keypoints):
     avg = sum(pose_keypoints[:, 2]) / 25
     return avg
+
 
 def avg_list_confidence(hand_list):
     all_avg = 0
     for i in range(len(hand_list)):
         all_avg += avg_hand_confidence(hand_list[i])
     return all_avg / len(hand_list)
+
+
+def valid_hand(prob, gesture_id):
+    if prob is None or gesture_id is None:
+        return False
+
+    if prob < 0.3:
+        return False
+
+    return True
+
 
 class MLPBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -174,6 +188,7 @@ def main():
         cam.set(4, 1024)
         pair_poseKeypoints = [[], []]
         input_hands = []
+        prev_state = None
         while (cv2.waitKey(1) != 27):
 
 
@@ -191,10 +206,14 @@ def main():
 
                 print(data.decode("utf-8"))
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                bottomLeftCornerOfText = (550, 500)
-                fontScale = 2
-                fontColor = (255, 0, 0)
+                fontScale = 3
+                fontColor = (255, 255, 0)
                 lineType = 2
+                fontThickness = 2
+                msg_on_screen = 'ABSENT!'
+                textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+
                 cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
                 cv2.putText(frame, 'Absent!',
                             bottomLeftCornerOfText,
@@ -229,35 +248,146 @@ def main():
 
             '''Output Recognition Results'''
             print_msg = False
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            bottomLeftCornerOfText = None
             fontColor = None
-            fontScale = None
+            fontScale = 3
+            fontThickness = 2
             msg_on_screen = None
 
-            if gesture == 1:
-                print_msg = True
+            if valid_hand(hand_confidence_avg, gesture) and gesture == 1:
+                if prob > 10:
+                    '''Counter'''
 
-            elif gesture == 2:
-                print_msg = True
+                    if prev_state is None:
+                        prev_state = ('thumbs_down', time.perf_counter())
+                        print(prev_state)
 
-            elif gesture == 3:
-                print_msg = True
+                    elif prev_state[0] == 'rest':
+                        if time.perf_counter() - prev_state[1] > 5.5:
+                            prev_state = ('thumbs_down', time.perf_counter())
+                            print(prev_state)
+
+                    elif prev_state[0] != 'thumbs_down':
+                        prev_state = ('thumbs_down', time.perf_counter())
+                        print(prev_state)
+
+                    else:
+                        print(time.perf_counter() - prev_state[1])
+                        if time.perf_counter() - prev_state[1] > 1:
+                            print_msg = True
+                            # bottomLeftCornerOfText = (450, 500)
+                            fontColor = (255, 0, 0)
+                            fontScale = 3
+                            msg_on_screen = 'THUMBS DOWN'
+                            textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                            bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+                        if time.perf_counter() - prev_state[1] > 3.5:
+                            prev_state = ('rest', time.perf_counter())
+
+            elif valid_hand(hand_confidence_avg, gesture) and gesture == 2:
+
+                '''Counter'''
+                if prev_state is None:
+                    prev_state = ('thumbs up', time.perf_counter())
+                    print(prev_state)
+
+                elif prev_state[0] == 'rest':
+                    if time.perf_counter() - prev_state[1] > 5.5:
+                        prev_state = ('thumbs_up', time.perf_counter())
+                        print(prev_state)
+
+                elif prev_state[0] != 'thumbs_up':
+                    prev_state = ('thumbs_up', time.perf_counter())
+                    print(prev_state)
+
+                else:
+                    print(time.perf_counter() - prev_state[1])
+                    if time.perf_counter() - prev_state[1] > 1:
+
+                        print_msg = True
+                        # bottomLeftCornerOfText = (450, 500)
+                        fontColor = (0, 255, 0)
+                        fontScale = 3
+                        msg_on_screen = 'THUMBS UP'
+                        textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                        bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+                    if time.perf_counter() - prev_state[1] > 3.5:
+                        prev_state = ('rest', time.perf_counter())
+
+
+            elif valid_hand(hand_confidence_avg, gesture) and gesture == 4:
+
+                '''Counter'''
+                if prev_state is None:
+                    prev_state = ('raise_hand', time.perf_counter())
+                    print(prev_state)
+
+                elif prev_state[0] == 'rest':
+                    if time.perf_counter() - prev_state[1] > 5.5:
+                        prev_state = ('raise_hand', time.perf_counter())
+                        print(prev_state)
+
+                elif prev_state[0] != 'raise_hand':
+                    prev_state = ('raise_hand', time.perf_counter())
+                    print(prev_state)
+
+                else:
+                    print(time.perf_counter() - prev_state[1])
+                    if time.perf_counter() - prev_state[1] > 1:
+                        print_msg = True
+                        bottomLeftCornerOfText = (450, 500)
+                        fontColor = (0, 255, 255)
+                        fontScale = 3
+                        msg_on_screen = 'HAND RAISED'
+                        textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                        bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+                    if time.perf_counter() - prev_state[1] > 3.5:
+                        prev_state = ('rest', time.perf_counter())
+
+
+
 
             elif moved:
-                print_msg = True
-                conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
 
-                res = conn.getresponse()
-                data = res.read()
+                '''Counter'''
+                if prev_state is None:
+                    prev_state = ('detect_move', time.perf_counter())
+                    print(prev_state)
 
+                elif prev_state[0] == 'rest':
+                    if time.perf_counter() - prev_state[1] > 1.5:
+                        prev_state = ('detect_move', time.perf_counter())
+                        print(prev_state)
+
+                elif prev_state[0] != 'detect_move':
+                    prev_state = ('detect_move', time.perf_counter())
+                    print(prev_state)
+
+                else:
+                    print_msg = True
+                    bottomLeftCornerOfText = (150, 500)
+                    fontColor = (255, 255, 255)
+                    fontScale = 3
+                    msg_on_screen = 'MOVEMENT DETECTED'
+                    textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                    # print(textsize)
+                    bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+                    if time.perf_counter() - prev_state[1] > 3.5:
+                        prev_state = ('rest', time.perf_counter())
+                # conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+                #
+                # res = conn.getresponse()
+                # data = res.read()
+            print(print_msg)
             if print_msg:
-                print(data.decode("utf-8"))
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                bottomLeftCornerOfText = (550, 500)
-                fontScale = 2
-                fontColor = (255, 0, 0)
+                # print(data.decode("utf-8"))
+                # bottomLeftCornerOfText = (550, 500)
+                # fontScale = 2
+                # fontColor = (255, 0, 0)
                 lineType = 2
-                cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
-                cv2.putText(frame, 'Movement Detected',
+                cv2.rectangle(frame, (0, 0), (1280, 1024), fontColor, 40)
+                cv2.putText(frame, msg_on_screen,
                             bottomLeftCornerOfText,
                             font,
                             fontScale,
