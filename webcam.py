@@ -10,20 +10,24 @@ import torch.nn as nn
 import http.client
 
 conn = http.client.HTTPSConnection("api.zoom.us")
-
-payload = "{\"message\":\"It's a beautiful day.\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload = "{\"message\":\"WELCOME TO THE MEETING\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_thumbsup = "{\"message\":\"NO PROBLEM\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_thumbsdown = "{\"message\":\"THUMBS DOWN\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_raisehand = "{\"message\":\"I HAVE A QUESTION!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_movement = "{\"message\":\"!!!!!!!!ALARM MOVEMENT DETECTED!!!!!!!!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_absent = "{\"message\":\"!!!!!!!!ABSENT!!!!!!!!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 
 headers = {
     'content-type': "application/json",
-    'authorization': "Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiIzZWI4M2VhZS05MTY3LTQzMjItYWUwYS0xYzViZDQyY2VmNDUifQ.eyJ2ZXIiOjcsImF1aWQiOiIxYTY5YWM0ZjZiMGUzMTZlOWFmNTI0NDI1YmM1YmYwNyIsImNvZGUiOiJza3RWVGtKQWZsX0FHUHB6dGhLUmNXU0g2MGI1cVZydFEiLCJpc3MiOiJ6bTpjaWQ6TEd2YjAwUndUcXFLVzZ4RVlLQ0NNUSIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJBR1BwenRoS1JjV1NINjBiNXFWcnRRIiwibmJmIjoxNjA2Mjg4ODE0LCJleHAiOjE2MDYyOTI0MTQsImlhdCI6MTYwNjI4ODgxNCwiYWlkIjoiOTRaRFc3NTlTS1dZSzBNSnp3bnJzZyIsImp0aSI6IjUxNTdjM2ViLTdjZDAtNDcxNS1iZmEzLWM5N2UzNTVkMjNhMCJ9.iCstDZ4D8ngZUnXqYnvbFQzAzZMMwAxNY8xIdSrWcZZQUWkYsZGJCFUVroR3KF6nB4Rr8VuD-Kq7QgU6IorfUw","token_type":"bearer","refresh_token":"eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiJkOTQ5YjU0ZS04MTVmLTRhYmItOWM1YS0yM2RiYmJiN2IxNjMifQ.eyJ2ZXIiOjcsImF1aWQiOiIxYTY5YWM0ZjZiMGUzMTZlOWFmNTI0NDI1YmM1YmYwNyIsImNvZGUiOiJza3RWVGtKQWZsX0FHUHB6dGhLUmNXU0g2MGI1cVZydFEiLCJpc3MiOiJ6bTpjaWQ6TEd2YjAwUndUcXFLVzZ4RVlLQ0NNUSIsImdubyI6MCwidHlwZSI6MSwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJBR1BwenRoS1JjV1NINjBiNXFWcnRRIiwibmJmIjoxNjA2Mjg4ODE0LCJleHAiOjIwNzkzMjg4MTQsImlhdCI6MTYwNjI4ODgxNCwiYWlkIjoiOTRaRFc3NTlTS1dZSzBNSnp3bnJzZyIsImp0aSI6IjAyZDQ3NjJiLWIwMTgtNDYyZS1iYjQ0LWIyNDE1Yzk0NWRmYSJ9.cdmnIZoYYbgY7b7itfXQvcmsUUNYN6NcDZlrLBdRb3D4-ktgo1JdKSGIq3o_01LjrR1lZYacZPtrBS-PQb5dcw"
+    'authorization': "Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiI3OWFlYzUzMi0yYTAwLTQ3ODctOTIyNi00MmIxMGRlYjAzOTgifQ.eyJ2ZXIiOjcsImF1aWQiOiIzMjQ5ZjI1MDMwY2VhMDRjNTAwYTdkOGI1OTYzY2JiYSIsImNvZGUiOiJXZWp0ZmZWRnNhX2dzb2dMeTBiUm1lWkh1WTdzWHJ4MEEiLCJpc3MiOiJ6bTpjaWQ6NDF3Q3BackJUaWE1S0JCYlZNekFZUSIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJnc29nTHkwYlJtZVpIdVk3c1hyeDBBIiwibmJmIjoxNjA2MzkxNTY1LCJleHAiOjE2MDYzOTUxNjUsImlhdCI6MTYwNjM5MTU2NSwiYWlkIjoicVk3Y0FndWFTTEc1Sm13Skd1TnRjdyIsImp0aSI6IjQ5OTI0ODdjLTY0N2MtNDg3Mi1hMTVlLWVlM2I3NDRlNzIxOCJ9.ILvmW6GlcQwAcc0SSS5VN98kDHcYzAQB2bpo0TumhfO5f3Dk454q-xkJVRC-KVF4UA-0SBabseHAwyx0UfDs3A"
     }
 
-# conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload, headers)
 #
-# res = conn.getresponse()
-# data = res.read()
-#
-# print(data.decode("utf-8"))
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))
 
 
 def avg_hand_confidence(hand_keypoints):
@@ -118,7 +122,10 @@ def metric(pair_poseKeypoints):
     prev_nose, nose = prev_poseKeypoints[0], poseKeypoints[0]
     prev_neck, neck = prev_poseKeypoints[1], poseKeypoints[1]
     prev_right_shoulder, right_shoulder = prev_poseKeypoints[2], poseKeypoints[2]
+    prev_right_elbow, right_elbow = prev_poseKeypoints[3], poseKeypoints[3]
     prev_left_shoulder, left_shoulder = prev_poseKeypoints[5], poseKeypoints[5]
+    prev_left_elbow, left_elbow = prev_poseKeypoints[6], poseKeypoints[6]
+    prev_center, center = prev_poseKeypoints[6], poseKeypoints[6]
     prev_right_eye, right_eye = prev_poseKeypoints[15], poseKeypoints[15]
     prev_left_eye, left_eye = prev_poseKeypoints[16], poseKeypoints[16]
     prev_right_ear, right_ear = prev_poseKeypoints[17], poseKeypoints[17]
@@ -128,14 +135,19 @@ def metric(pair_poseKeypoints):
     distance_neck = distance(prev_neck, neck)
     distance_right_shoulder = distance(prev_right_shoulder, right_shoulder)
     distance_left_shoulder = distance(prev_left_shoulder, left_shoulder)
+    distance_right_elbow = distance(prev_right_elbow, right_elbow)
+    distance_left_elbow = distance(prev_left_elbow, left_elbow)
+    distance_center = distance(prev_center, center)
     distance_right_eye = distance(prev_right_eye, right_eye)
     distance_left_eye = distance(prev_left_eye, left_eye)
     distance_right_ear = distance(prev_right_ear, right_ear)
     distance_left_ear = distance(prev_left_ear, left_ear)
 
-    if distance_nose > 5000:
+    if distance_nose > 7000 and distance_neck > 6000:
         return True
-    elif distance_neck > 4000:
+    elif distance_left_elbow > 4000 or distance_right_elbow > 4000:
+        return True
+    elif distance_center > 5000:
         return True
     else:
         return False
@@ -189,7 +201,11 @@ def main():
         pair_poseKeypoints = [[], []]
         input_hands = []
         prev_state = None
+        msg_state = ('not_sent', time.perf_counter())
         while (cv2.waitKey(1) != 27):
+            if msg_state[0] == 'sent':
+                if time.perf_counter() - msg_state[1] > 2.5:
+                    msg_state = ('not_sent', time.perf_counter())
 
 
             ret, frame = cam.read()
@@ -199,12 +215,21 @@ def main():
 
             '''If Person not in Camera'''
             if datum.poseKeypoints.shape == ():
-                conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+                # conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
+                #
+                # res = conn.getresponse()
+                # data = res.read()
+                #
+                # print(data.decode("utf-8"))
+                if msg_state[0] == 'not_sent':
+                    # print('WHY NOT WORKING')
+                    conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_absent, headers)
+                    #
+                    res = conn.getresponse()
+                    data = res.read()
 
-                res = conn.getresponse()
-                data = res.read()
-
-                print(data.decode("utf-8"))
+                    print(data.decode("utf-8"))
+                    msg_state = ('sent', time.perf_counter())
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale = 3
                 fontColor = (255, 255, 0)
@@ -240,9 +265,9 @@ def main():
             hand_confidence_avg = avg_list_confidence(input_hands)
             # if len(input_hands) == 12 and avg >= 0.1:
             if len(input_hands) == 12:
-                print('Confidence : ', hand_confidence_avg)
+                # print('Confidence : ', hand_confidence_avg)
                 prob, gesture = get_hand_gesture('normalizev2.pt', input_hands, 'cuda')
-            print(prob, gesture)
+            # print(prob, gesture)
 
 
 
@@ -256,25 +281,36 @@ def main():
             msg_on_screen = None
 
             if valid_hand(hand_confidence_avg, gesture) and gesture == 1:
-                if prob > 10:
+                print('THUMBS DOWN PROB : ', prob)
+                if prob > 11:
                     '''Counter'''
 
                     if prev_state is None:
                         prev_state = ('thumbs_down', time.perf_counter())
-                        print(prev_state)
+                        # print(prev_state)
 
                     elif prev_state[0] == 'rest':
                         if time.perf_counter() - prev_state[1] > 5.5:
                             prev_state = ('thumbs_down', time.perf_counter())
-                            print(prev_state)
+                            # print(prev_state)
 
                     elif prev_state[0] != 'thumbs_down':
                         prev_state = ('thumbs_down', time.perf_counter())
-                        print(prev_state)
+                        # print(prev_state)
 
                     else:
-                        print(time.perf_counter() - prev_state[1])
-                        if time.perf_counter() - prev_state[1] > 1:
+                        # print(time.perf_counter() - prev_state[1])
+                        if msg_state[0] == 'not_sent':
+
+                            conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_thumbsdown,
+                                         headers)
+                            #
+                            res = conn.getresponse()
+                            data = res.read()
+
+                            print(data.decode("utf-8"))
+                            msg_state = ('sent', time.perf_counter())
+                        if time.perf_counter() - prev_state[1] > 0.5:
                             print_msg = True
                             # bottomLeftCornerOfText = (450, 500)
                             fontColor = (255, 0, 0)
@@ -282,59 +318,78 @@ def main():
                             msg_on_screen = 'THUMBS DOWN'
                             textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
                             bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
-                        if time.perf_counter() - prev_state[1] > 3.5:
-                            prev_state = ('rest', time.perf_counter())
+                        # if time.perf_counter() - prev_state[1] > 3.5:
+                        #     prev_state = ('rest', time.perf_counter())
 
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 2:
-
+                print('THUMBS DOWN PROB : ', prob)
                 '''Counter'''
-                if prev_state is None:
-                    prev_state = ('thumbs up', time.perf_counter())
-                    print(prev_state)
+                if prob > 11:
+                    if prev_state is None:
+                        prev_state = ('thumbs up', time.perf_counter())
+                        # print(prev_state)
 
-                elif prev_state[0] == 'rest':
-                    if time.perf_counter() - prev_state[1] > 5.5:
+                    elif prev_state[0] == 'rest':
+                        if time.perf_counter() - prev_state[1] > 5.5:
+                            prev_state = ('thumbs_up', time.perf_counter())
+                            # print(prev_state)
+
+                    elif prev_state[0] != 'thumbs_up':
                         prev_state = ('thumbs_up', time.perf_counter())
-                        print(prev_state)
+                        # print(prev_state)
 
-                elif prev_state[0] != 'thumbs_up':
-                    prev_state = ('thumbs_up', time.perf_counter())
-                    print(prev_state)
+                    else:
+                        # print(time.perf_counter() - prev_state[1])
+                        if msg_state[0] == 'not_sent':
 
-                else:
-                    print(time.perf_counter() - prev_state[1])
-                    if time.perf_counter() - prev_state[1] > 1:
+                            conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_thumbsup, headers)
+                            #
+                            res = conn.getresponse()
+                            data = res.read()
 
-                        print_msg = True
-                        # bottomLeftCornerOfText = (450, 500)
-                        fontColor = (0, 255, 0)
-                        fontScale = 3
-                        msg_on_screen = 'THUMBS UP'
-                        textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
-                        bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
-                    if time.perf_counter() - prev_state[1] > 3.5:
-                        prev_state = ('rest', time.perf_counter())
+                            print(data.decode("utf-8"))
+                            msg_state = ('sent', time.perf_counter())
+                        if time.perf_counter() - prev_state[1] > 0.5:
+
+                            print_msg = True
+                            # bottomLeftCornerOfText = (450, 500)
+                            fontColor = (0, 255, 0)
+                            fontScale = 3
+                            msg_on_screen = 'THUMBS UP'
+                            textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                            bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+                        # if time.perf_counter() - prev_state[1] > 3.5:
+                        #     prev_state = ('rest', time.perf_counter())
 
 
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 4:
-
+                print('RAISE HAND PROB : ', prob)
                 '''Counter'''
                 if prev_state is None:
                     prev_state = ('raise_hand', time.perf_counter())
-                    print(prev_state)
+                    # print(prev_state)
 
                 elif prev_state[0] == 'rest':
                     if time.perf_counter() - prev_state[1] > 5.5:
                         prev_state = ('raise_hand', time.perf_counter())
-                        print(prev_state)
+                        # print(prev_state)
 
                 elif prev_state[0] != 'raise_hand':
                     prev_state = ('raise_hand', time.perf_counter())
-                    print(prev_state)
+                    # print(prev_state)
 
                 else:
-                    print(time.perf_counter() - prev_state[1])
-                    if time.perf_counter() - prev_state[1] > 1:
+                    # print(time.perf_counter() - prev_state[1])
+                    if msg_state[0] == 'not_sent':
+
+                        conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_raisehand, headers)
+                        #
+                        res = conn.getresponse()
+                        data = res.read()
+
+                        print(data.decode("utf-8"))
+                        msg_state = ('sent', time.perf_counter())
+                    if time.perf_counter() - prev_state[1] > 0.5:
                         print_msg = True
                         bottomLeftCornerOfText = (450, 500)
                         fontColor = (0, 255, 255)
@@ -342,8 +397,8 @@ def main():
                         msg_on_screen = 'HAND RAISED'
                         textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
                         bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
-                    if time.perf_counter() - prev_state[1] > 3.5:
-                        prev_state = ('rest', time.perf_counter())
+                    # if time.perf_counter() - prev_state[1] > 3.5:
+                    #     prev_state = ('rest', time.perf_counter())
 
 
 
@@ -353,18 +408,29 @@ def main():
                 '''Counter'''
                 if prev_state is None:
                     prev_state = ('detect_move', time.perf_counter())
-                    print(prev_state)
+                    # print(prev_state)
 
                 elif prev_state[0] == 'rest':
                     if time.perf_counter() - prev_state[1] > 1.5:
                         prev_state = ('detect_move', time.perf_counter())
-                        print(prev_state)
+                        # print(prev_state)
 
                 elif prev_state[0] != 'detect_move':
                     prev_state = ('detect_move', time.perf_counter())
-                    print(prev_state)
+                    # print(prev_state)
 
                 else:
+                    # print(msg_state)
+                    if msg_state[0] == 'not_sent':
+
+                        conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_movement, headers)
+                        #
+                        res = conn.getresponse()
+                        data = res.read()
+
+                        print(data.decode("utf-8"))
+                        msg_state = ('sent', time.perf_counter())
+
                     print_msg = True
                     bottomLeftCornerOfText = (150, 500)
                     fontColor = (255, 255, 255)
@@ -373,13 +439,9 @@ def main():
                     textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
                     # print(textsize)
                     bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
-                    if time.perf_counter() - prev_state[1] > 3.5:
-                        prev_state = ('rest', time.perf_counter())
-                # conn.request("POST", "/v2/chat/users/silvano211205@gmail.com/messages", payload, headers)
-                #
-                # res = conn.getresponse()
-                # data = res.read()
-            print(print_msg)
+                    # if time.perf_counter() - prev_state[1] > 3.5:
+                    #     prev_state = ('rest', time.perf_counter())
+
             if print_msg:
                 # print(data.decode("utf-8"))
                 # bottomLeftCornerOfText = (550, 500)
