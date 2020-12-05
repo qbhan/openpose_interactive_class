@@ -10,16 +10,17 @@ import torch.nn as nn
 import http.client
 
 conn = http.client.HTTPSConnection("api.zoom.us")
-payload = "{\"message\":\"WELCOME TO THE MEETING\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload = "{\"message\":\"ATTENDENCE CHECK\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_thumbsup = "{\"message\":\"NO PROBLEM\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_thumbsdown = "{\"message\":\"THUMBS DOWN\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_raisehand = "{\"message\":\"I HAVE A QUESTION!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_movement = "{\"message\":\"!!!!!!!!ALARM MOVEMENT DETECTED!!!!!!!!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_absent = "{\"message\":\"!!!!!!!!ABSENT!!!!!!!!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
+payload_multi = "{\"message\":\"!!!!!!!!MULTIPLE PEOPLE!!!!!!!!\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 
 headers = {
     'content-type': "application/json",
-    'authorization': "Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiI3OWFlYzUzMi0yYTAwLTQ3ODctOTIyNi00MmIxMGRlYjAzOTgifQ.eyJ2ZXIiOjcsImF1aWQiOiIzMjQ5ZjI1MDMwY2VhMDRjNTAwYTdkOGI1OTYzY2JiYSIsImNvZGUiOiJXZWp0ZmZWRnNhX2dzb2dMeTBiUm1lWkh1WTdzWHJ4MEEiLCJpc3MiOiJ6bTpjaWQ6NDF3Q3BackJUaWE1S0JCYlZNekFZUSIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJnc29nTHkwYlJtZVpIdVk3c1hyeDBBIiwibmJmIjoxNjA2MzkxNTY1LCJleHAiOjE2MDYzOTUxNjUsImlhdCI6MTYwNjM5MTU2NSwiYWlkIjoicVk3Y0FndWFTTEc1Sm13Skd1TnRjdyIsImp0aSI6IjQ5OTI0ODdjLTY0N2MtNDg3Mi1hMTVlLWVlM2I3NDRlNzIxOCJ9.ILvmW6GlcQwAcc0SSS5VN98kDHcYzAQB2bpo0TumhfO5f3Dk454q-xkJVRC-KVF4UA-0SBabseHAwyx0UfDs3A"
+    'authorization': "Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiI2ZDgzNmU5NC1mOTU2LTQ4N2UtYjZiMS01Y2Q1MzJmNTIwMjgifQ.eyJ2ZXIiOjcsImF1aWQiOiIzMjQ5ZjI1MDMwY2VhMDRjNTAwYTdkOGI1OTYzY2JiYSIsImNvZGUiOiIxTEhKbG1iVHZ4X2dzb2dMeTBiUm1lWkh1WTdzWHJ4MEEiLCJpc3MiOiJ6bTpjaWQ6NDF3Q3BackJUaWE1S0JCYlZNekFZUSIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJnc29nTHkwYlJtZVpIdVk3c1hyeDBBIiwibmJmIjoxNjA2NDQzMjgwLCJleHAiOjE2MDY0NDY4ODAsImlhdCI6MTYwNjQ0MzI4MCwiYWlkIjoicVk3Y0FndWFTTEc1Sm13Skd1TnRjdyIsImp0aSI6ImZkYWFiOWUzLWZhZTktNDI3My04MDI1LTU0YTg5NDA1NDM2ZiJ9.ms3Jd0tn_a7MXEXSbOSsBMf6LinTraLtA7g0hGBJLpDzWXzihEnTQ1C06HxmgXrn4cZ_Yr7TZoUDl2GdkuiPZQ"
     }
 
 conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload, headers)
@@ -145,7 +146,7 @@ def metric(pair_poseKeypoints):
 
     if distance_nose > 7000 and distance_neck > 6000:
         return True
-    elif distance_left_elbow > 4000 or distance_right_elbow > 4000:
+    elif distance_left_shoulder > 4000 or distance_right_shoulder > 4000:
         return True
     elif distance_center > 5000:
         return True
@@ -232,7 +233,7 @@ def main():
                     msg_state = ('sent', time.perf_counter())
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale = 3
-                fontColor = (255, 255, 0)
+                fontColor = (0, 0, 255)
                 lineType = 2
                 fontThickness = 2
                 msg_on_screen = 'ABSENT!'
@@ -249,6 +250,39 @@ def main():
                 cv2.imshow("Openpose 1.4.0 Webcam", frame)
                 continue
 
+            if len(datum.poseKeypoints) > 1:
+                if prev_state is not None and prev_state[0] == 'multi_people':
+                    if prev_state[1] > 2:
+                        if msg_state[0] == 'not_sent':
+                            # print('WHY NOT WORKING')
+                            conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload_multi, headers)
+                            #
+                            res = conn.getresponse()
+                            data = res.read()
+
+                            print(data.decode("utf-8"))
+                            msg_state = ('sent', time.perf_counter())
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        fontScale = 3
+                        fontColor = (0, 0, 255)
+                        lineType = 2
+                        fontThickness = 2
+                        msg_on_screen = 'MUTLIPLE PEOPLE!'
+                        textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
+                        bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
+
+                        cv2.rectangle(frame, (0, 0), (1280, 1024), (0, 0, 255), 20)
+                        cv2.putText(frame, msg_on_screen,
+                                    bottomLeftCornerOfText,
+                                    font,
+                                    fontScale,
+                                    fontColor,
+                                    lineType)
+                        cv2.imshow("Openpose 1.4.0 Webcam", frame)
+                        msg_state = ('sent', time.perf_counter())
+                        continue
+                else:
+                    prev_state = ('multi_people', time.perf_counter())
             '''Evaluate Movement & Confidence'''
             del pair_poseKeypoints[0]
             pair_poseKeypoints.append(datum.poseKeypoints[0])
@@ -322,9 +356,9 @@ def main():
                         #     prev_state = ('rest', time.perf_counter())
 
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 2:
-                print('THUMBS DOWN PROB : ', prob)
+                print('THUMBS UP PROB : ', prob)
                 '''Counter'''
-                if prob > 11:
+                if prob > 14:
                     if prev_state is None:
                         prev_state = ('thumbs up', time.perf_counter())
                         # print(prev_state)
@@ -433,7 +467,7 @@ def main():
 
                     print_msg = True
                     bottomLeftCornerOfText = (150, 500)
-                    fontColor = (255, 255, 255)
+                    fontColor = (0, 0, 255)
                     fontScale = 3
                     msg_on_screen = 'MOVEMENT DETECTED'
                     textsize = cv2.getTextSize(msg_on_screen, font, fontScale, fontThickness)[0]
