@@ -1,3 +1,6 @@
+
+
+
 def avg_hand_confidence(hand_keypoints):
     left_avg = sum(hand_keypoints[:, 2]) / 21
     return left_avg
@@ -10,6 +13,8 @@ def avg_pose_confidence(pose_keypoints):
 
 def avg_list_confidence(hand_list):
     all_avg = 0
+    if len(hand_list) == 0:
+        return 0
     for i in range(len(hand_list)):
         all_avg += avg_hand_confidence(hand_list[i])
     return all_avg / len(hand_list)

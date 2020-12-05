@@ -83,8 +83,13 @@ def main():
         input_hands = []
         prev_state = None
 
-        model = GestureDetector(frames=12, nf=64).to('cuda')
-        model.load_state_dict(torch.load('normalizev2.pt'))
+        # model = GestureDetector(frames=12, nf=64).to('cuda')    # 'normalizev2.pt'
+        # model.load_state_dict(torch.load('normalizev2.pt'))
+
+        model = HandGestureNet(n_channels=42, n_classes=5)
+        model.load_state_dict(torch.load('cnn_resample_100.pt'))
+        # model.load_state_dict(torch.load('CNN_mid12.pt'))
+        model.to('cuda')
         model.eval()
 
         msg_state = ('not_sent', time.perf_counter())
@@ -170,17 +175,51 @@ def main():
             moved = metric(pair_poseKeypoints)
 
             '''Evaluate Hand Gesture'''
-            if len(input_hands) == 12:
-                del input_hands[0]
-            input_hands.append(datum.handKeypoints[0][0])
+            # if len(input_hands) == 12:  # normalizev2.pt
+            #     del input_hands[0]
+            # input_hands.append(datum.handKeypoints[0][0])
+            # # print(len(input_hands))
+            # prob, gesture = None, None
+            # hand_confidence_avg = avg_list_confidence(input_hands)
+            # # if len(input_hands) == 12 and avg >= 0.1:
+            # if len(input_hands) == 12:
+            #     # print('Confidence : ', hand_confidence_avg)
+            #     prob, gesture = get_hand_gesture(model, input_hands)
+            # # print(prob, gesture)
+
+            norm_hand = normalize(datum.handKeypoints[0][0])
+            # print(norm_hand.shape)
+            if len(input_hands) == 100:  # normalizev2.pt
+                for i in range(5):
+                    del input_hands[0]
+            for i in range(5):
+                input_hands.append(norm_hand)
             # print(len(input_hands))
             prob, gesture = None, None
             hand_confidence_avg = avg_list_confidence(input_hands)
             # if len(input_hands) == 12 and avg >= 0.1:
-            if len(input_hands) == 12:
+            if len(input_hands) == 100:
                 # print('Confidence : ', hand_confidence_avg)
-                prob, gesture = get_hand_gesture(model, input_hands)
-            # print(prob, gesture)
+                # print(input_hands[0][:][:2])
+                inputs = torch.FloatTensor(input_hands).to('cuda')
+                inputs = inputs[:,:,:2]
+                # print(inputs.size())
+                # prob, gesture = get_hand_gesture_cnn(model, input_hands[:][:][:1])
+                prob, gesture = get_hand_gesture_cnn(model, inputs)
+
+            # if len(input_hands) == 12:  # normalizev2.pt
+            #     del input_hands[0]
+            # input_hands.append(norm_hand)
+            # # print(len(input_hands))
+            # prob, gesture = None, None
+            # hand_confidence_avg = avg_list_confidence(input_hands)
+            # # if len(input_hands) == 12 and avg >= 0.1:
+            # if len(input_hands) == 12:
+            #     # print('Confidence : ', hand_confidence_avg)
+            #     prob, gesture = get_hand_gesture_cnn(model, input_hands)
+            print(prob, gesture)
+
+
 
 
 
@@ -195,7 +234,7 @@ def main():
 
             if valid_hand(hand_confidence_avg, gesture) and gesture == 1:
                 print('THUMBS DOWN PROB : ', prob)
-                if prob > 11:
+                if prob > 0:
                     '''Counter'''
 
                     if prev_state is None:
@@ -237,7 +276,7 @@ def main():
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 2:
                 print('THUMBS UP PROB : ', prob)
                 '''Counter'''
-                if prob > 14:
+                if prob > 0:
                     if prev_state is None:
                         prev_state = ('thumbs up', time.perf_counter())
                         # print(prev_state)
