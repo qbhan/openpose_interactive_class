@@ -4,15 +4,20 @@ import os
 from sys import platform
 import time
 
-# import torch
-# import torch.nn as nn
-
 from model import *
 from metrics import *
 
 import http.client
 
-conn = http.client.HTTPSConnection("api.zoom.us")
+'''
+Part to be ready for Zoom connection.
+Payloads carry messages to predifined channels. Please get the key to your channel you'll use.
+Headers should contain a 1-hour available authorization key to your channel.
+Currently it is filled with my private (but expired) authorization key. 
+You should also fill your own key. Please refer to Build-APP in zoom.us
+Without proper keys and authorization, expired messages will be printed.
+'''
+conn = http.client.HTTPSConnection("api.zoom.us")  # create connection with Zoom
 payload = "{\"message\":\"ATTENDENCE CHECK\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_thumbsup = "{\"message\":\"NO PROBLEM\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
 payload_thumbsdown = "{\"message\":\"THUMBS DOWN\",\"to_channel\":\"c18c9ce3-6017-4f68-9ead-bb938eb565af\"}"
@@ -31,11 +36,16 @@ conn.request("POST", "/v2/chat/users/smarthkb98@kaist.ac.kr/messages", payload, 
 res = conn.getresponse()
 data = res.read()
 
-print(data.decode("utf-8"))
+print(data.decode("utf-8"))  # check initial connection
 
 
 def main():
     try:
+        '''
+        Part to get openpose & pyopenpose from built openpose.
+        Be sure to build the openpose system first.
+        Feel free to change directories of built python packages.
+        '''
         # Import Openpose (Windows/Ubuntu/OSX)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         try:
@@ -57,7 +67,10 @@ def main():
             print('Error: OpenPose library could not be found. Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?')
             raise e
 
-        # Custom Params (refer to include/openpose/flags.hpp for more parameters)
+        '''
+        Customizing part for Openpose Python Wrapper.
+        For the project, only enable body & hand.
+        '''
         params = dict()
         params["model_folder"] = "../../../models/"
         params["hand"] = True
@@ -83,16 +96,28 @@ def main():
         input_hands = []
         prev_state = None
 
-        # model = GestureDetector(frames=12, nf=64).to('cuda')    # 'normalizev2.pt'
-        # model.load_state_dict(torch.load('normalizev2.pt'))
-
+        '''
+        Loading Model for Recognizing Hand Gestures
+        Please refer to model.py for various models trained for the task.
+        Current implementaiton is based on cnn_resample_100.pt which shows best demo performance.
+        If you would like to use other models, be sure to modify the codes below properly.
+        '''
         model = HandGestureNet(n_channels=42, n_classes=5)
         model.load_state_dict(torch.load('cnn_resample_100.pt'))
         # model.load_state_dict(torch.load('CNN_mid12.pt'))
         model.to('cuda')
         model.eval()
 
+        '''
+        Message state contains time of state changes.
+        Used to prevent burst of messages in short time to the Zoom chat.
+        '''
         msg_state = ('not_sent', time.perf_counter())
+
+        '''
+        Starting the Project
+        Pose & Hand Gesture Estimation
+        '''
         while (cv2.waitKey(1) != 27):
             if msg_state[0] == 'sent':
                 if time.perf_counter() - msg_state[1] > 2.5:
@@ -134,6 +159,7 @@ def main():
                 cv2.imshow("Openpose 1.4.0 Webcam", frame)
                 continue
 
+            '''If there are more than one people on camera'''
             if len(datum.poseKeypoints) > 1:
                 if prev_state is not None and prev_state[0] == 'multi_people':
                     if prev_state[1] > 2:
@@ -167,6 +193,7 @@ def main():
                         continue
                 else:
                     prev_state = ('multi_people', time.perf_counter())
+
             '''Evaluate Movement & Confidence'''
             del pair_poseKeypoints[0]
             pair_poseKeypoints.append(datum.poseKeypoints[0])
@@ -174,7 +201,11 @@ def main():
             # print(body_confidence_avg)
             moved = metric(pair_poseKeypoints)
 
-            '''Evaluate Hand Gesture'''
+            '''
+            Evaluate Hand Gesture
+            Please modify the below if you use other models for hand gestures.
+            Refer to model.py
+            '''
             # if len(input_hands) == 12:  # normalizev2.pt
             #     del input_hands[0]
             # input_hands.append(datum.handKeypoints[0][0])
@@ -189,7 +220,7 @@ def main():
 
             norm_hand = normalize(datum.handKeypoints[0][0])
             # print(norm_hand.shape)
-            if len(input_hands) == 100:  # normalizev2.pt
+            if len(input_hands) == 100:
                 for i in range(5):
                     del input_hands[0]
             for i in range(5):
@@ -207,16 +238,6 @@ def main():
                 # prob, gesture = get_hand_gesture_cnn(model, input_hands[:][:][:1])
                 prob, gesture = get_hand_gesture_cnn(model, inputs)
 
-            # if len(input_hands) == 12:  # normalizev2.pt
-            #     del input_hands[0]
-            # input_hands.append(norm_hand)
-            # # print(len(input_hands))
-            # prob, gesture = None, None
-            # hand_confidence_avg = avg_list_confidence(input_hands)
-            # # if len(input_hands) == 12 and avg >= 0.1:
-            # if len(input_hands) == 12:
-            #     # print('Confidence : ', hand_confidence_avg)
-            #     prob, gesture = get_hand_gesture_cnn(model, input_hands)
             print(prob, gesture)
 
 
@@ -232,9 +253,10 @@ def main():
             fontThickness = 2
             msg_on_screen = None
 
+            '''Thumbs DOWN'''
             if valid_hand(hand_confidence_avg, gesture) and gesture == 1:
                 print('THUMBS DOWN PROB : ', prob)
-                if prob > 0:
+                if prob > 0:  # mitigated by using softmax
                     '''Counter'''
 
                     if prev_state is None:
@@ -273,6 +295,7 @@ def main():
                         # if time.perf_counter() - prev_state[1] > 3.5:
                         #     prev_state = ('rest', time.perf_counter())
 
+                '''Thumbs UP'''
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 2:
                 print('THUMBS UP PROB : ', prob)
                 '''Counter'''
@@ -312,7 +335,7 @@ def main():
                             bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
                         # if time.perf_counter() - prev_state[1] > 3.5:
                         #     prev_state = ('rest', time.perf_counter())
-
+                '''RAISED HAND'''
             elif valid_hand(hand_confidence_avg, gesture) and gesture == 4:
                 print('RAISE HAND PROB : ', prob)
                 '''Counter'''
@@ -351,6 +374,10 @@ def main():
                     # if time.perf_counter() - prev_state[1] > 3.5:
                     #     prev_state = ('rest', time.perf_counter())
 
+                '''
+                Movement Detected
+                Please refer to metric.py for detection metrics
+                '''
             elif moved:
 
                 '''Counter'''
@@ -389,7 +416,7 @@ def main():
                     bottomLeftCornerOfText = ((1280 - textsize[0]) // 2, (1024 + textsize[1]) // 2)
                     # if time.perf_counter() - prev_state[1] > 3.5:
                     #     prev_state = ('rest', time.perf_counter())
-
+            '''Print messages according to states above'''
             if print_msg:
                 lineType = 2
                 cv2.rectangle(frame, (0, 0), (1280, 1024), fontColor, 40)

@@ -25,12 +25,17 @@ class MLPBlock(nn.Module):
         return output
 
 
+'''
+    Gesture Dectector with MLP layers
+    When using, make sure to specify the length of frames for the input e.g. 12 frames
+    Frames means how much hand joints for usage.
+'''
 class GestureDetector(nn.Module):
-    def __init__(self, frames, nf):
+    def __init__(self, frames):
         super(GestureDetector, self).__init__()
         block = MLPBlock
-        self.mlp = block(frames * 21 * 3, nf)
-        self.fc = nn.Linear(nf, 5)  # our gesture dataset is consisted of 5 classes
+        self.mlp = block(frames * 21 * 3, 64)
+        self.fc = nn.Linear(64, 5)  # our gesture dataset is consisted of 5 classes
 
     def forward(self, x):
         # print(x.view(x.size()[0], -1).shape)
@@ -40,6 +45,7 @@ class GestureDetector(nn.Module):
         return output
 
 
+'''Get output of the MLP detector model and return result and its probability'''
 def get_hand_gesture(model, input):
     input = torch.FloatTensor(input).to('cuda')
     input = input.unsqueeze(0)
@@ -52,6 +58,9 @@ def get_hand_gesture(model, input):
         prob = output[0][pred].data
         return prob, pred
 
+
+
+'''Get output of the CNN detector model and return result and its probability'''
 def get_hand_gesture_cnn(model, input):
     # print('GET HAND GESTURE')
     # input = torch.FloatTensor(input).to('cuda')
@@ -73,6 +82,12 @@ def get_hand_gesture_cnn(model, input):
         prob = prob_list[0][pred].data
         return prob, pred
 
+
+'''
+    Gesture Dectector based on CNN
+    # When using, make sure to specify the length of frame for the input e.g. 12 frames
+    # Frames means how much hand joints for usage.
+'''
 class HandGestureNet(torch.nn.Module):
     """
     [Devineau et al., 2018] Deep Learning for Hand Gesture Recognition on Skeletal Data
@@ -228,8 +243,8 @@ class HandGestureNet(torch.nn.Module):
         return output
 
 
+'''Normalize hand joints position while maintaining ratio of width & height'''
 def normalize(tens):
-    """ hand joint position ??? 100 * 100 ??? ????"""
     max_x = max(tens[:, 0])
     min_x = min(tens[:, 0])
 
@@ -241,7 +256,7 @@ def normalize(tens):
 
     return tens
 
-
+'''Resample hand joints in input tensor to increase samples for training'''
 def resample_n(tens, n):
     # origin_len = tens.shape[0]
     origin_len = len(tens)
