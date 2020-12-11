@@ -2,8 +2,8 @@
 ## Motion detector for interactive online real-time class
 We deliver a body movement & hand gesture detector that can enhance the interactivity of online real-time classes.
 ## Demo
-gif of my face
-youtube link
+### Hand Gesture Recognition
+<p align="center"><img src="static/thumbs_down_new.gif" width="33%"><img src="static/thumbs_up_new.gif" width="33%"><img src="static/raise_hand_new.gif" width="33%"></p>
 
 ## Quantitative Results
 <p align="center"><img src="static/MLP_mid12.png" width="33%"><img src="static/MLP_mid2.png" width="33%"><img src="static/MLP_max2.png" width="33%"></p>
