@@ -6,15 +6,6 @@ import ast
 import csv
 import threading
 
-# **Implement the path manipulation.**
-# PLACE THIS .py FILE IN THE SAME FOLDER WHERE "07hand_from_image.py" IS PLACED.
-# REPLACE THE root_dir W/ YOUR GESTURE DIR.
-# ALSO, IN "07hand_from_image.py", MAKE SURE TO *ONLY* PRINT "Hand" VARIABLE, WHICH IS A DICTIONARY.
-# 'Hand' should be a dictionary containing {'left': 2d array, 'right': 2d array}
-root_dir = "D:\projects\openpose\examples\media/Gesture"
-gestures = next(os.walk(root_dir))[1]
-Hand = {}
-
 class gestureThread (threading.Thread):
     def __init__(self, threadID, name, counter):
         threading.Thread.__init__(self)
@@ -58,6 +49,14 @@ class gestureThread (threading.Thread):
 
 
 if __name__ == '__main__':
+    # **Implement the path manipulation.**
+    # PLACE THIS .py FILE IN THE SAME FOLDER WHERE "07hand_from_image.py" IS PLACED.
+    # REPLACE THE root_dir W/ YOUR GESTURE DIR.
+    # ALSO, IN "07hand_from_image.py", MAKE SURE TO *ONLY* PRINT "Hand" VARIABLE, WHICH IS A DICTIONARY.
+    # 'Hand' should be a dictionary containing {'left': 2d array, 'right': 2d array}
+    root_dir = "D:\projects\openpose\examples\media/Gesture"
+    gestures = next(os.walk(root_dir))[1]
+    Hand = {}
     # 'field_names' are field names for the .csv file.
     field_names = ['id', 'left', 'right']
     print(gestures, type(gestures[1]))
