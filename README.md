@@ -6,15 +6,15 @@ gif of my face
 youtube link
 
 ## Quantitative Results
-<center><img src="MLP_mid12.png" width="33%"><img src="MLP_mid2.png" width="33%"><img src="MLP_max2.png" width="33%">
-<img src="CNN_mid12.png" width="33%"><img src="CNN_duplicate100.png" width="33%">
-</center>
+<center><img src="MLP_mid12.png" width="33%"><img src="MLP_mid2.png" width="33%"><img src="MLP_max2.png" width="33%"></center>
+
+<center><img src="CNN_mid12.png" width="33%"><img src="CNN_duplicate100.png" width="33%"></center>
 Confusion matrices of each model. The upper line shows the results of the MLP classifier and the lower line shows the results of the CNN-based classifier. The column names indicate predicted labels and the row names indicate the ground truth labels.
  
 
 ## Methods
 ### Flow of application
-<center><img src="application.png" width=80%></center>
+<center><img src="application.PNG" width=80%></center>
 
 Process of our application. Motion detection and gesture recognition are independent of each other. Both tasks use OpenPose to get the keypoints. Motion detection is based on pre-defined metrics which are manually designed. Gesture recognition is done by a classifier. We implemented two different classifiers.
 
@@ -36,7 +36,7 @@ Considering the real-time setting and relatively small input size, we decided to
 
 ### CNN-based classifier
 
-<center><img src="CNN_classifier.png" width=80%></center>
+<center><img src="CNN_classifier.PNG" width=80%></center>
 
 We also trained a CNN-based classifier to overcome the disadvantages of the MLP classifier. We used the model architecture from the paper [Deep Learning for Hand Gesture Recognition on Skeletal Data](https://ieeexplore.ieee.org/document/8373818). In this work, they used multi-channel CNN to extract channel-specific features. The channel indicates each coordinate (x, y) of a joint. Each CNN consists of two feature extractors and one residual branch. They produces channel-specific features by concatenating the three outputs. Final MLP layer takes the extracted features as input and predicts the gesture. We modified some minor points of the existing model, such as input/output dimensions and activation function. Check the CNN-based model training code [here (GestureCNN.ipynb)](https://colab.research.google.com/drive/1EgJt0P3w28_fkQxq__0R_s_88VGasuGg#scrollTo=jTqC9q7HPVno). 
 
