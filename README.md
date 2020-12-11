@@ -14,7 +14,7 @@ Confusion matrices of each model. The upper line shows the results of the MLP cl
 
 ## Methods
 ### Flow of application
-<center><img src="application.PNG" width=80%></center>
+<center><img src="application.PNG" width=50%></center>
 
 Process of our application. Motion detection and gesture recognition are independent of each other. Both tasks use OpenPose to get the keypoints. Motion detection is based on pre-defined metrics which are manually designed. Gesture recognition is done by a classifier. We implemented two different classifiers.
 
