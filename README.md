@@ -53,3 +53,8 @@ We also trained a CNN-based classifier to overcome the disadvantages of the MLP 
 Caution about Zoom
 
 ## Reference
+* Z. Cao, G. Hidalgo, T. Simon, S. -E. Wei and Y. Sheikh, "OpenPose: Realtime Multi-Person 2D Pose Estimation Using Part Affinity Fields," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 1, pp. 172-186, 1 Jan. 2021
+* N. H. Dardas and N. D. Georganas, “Real-time hand gesture detection and recognition using bag-of-features and support vector machine techniques,” IEEE. Trans. Instrum. Meas., vol. 60, no. 11, pp. 3592–3607, Nov. 2011.
+* N. H. Dardas and E. M. Petriu, “Hand gesture detection and recognition using principal component analysis,” in Proc. CIMSA, Ottawa, Canada, 2011, pp. 1–6.
+* O. Kop¨ ukl ¨ u, A. Gunduz, N. Kose, and G. Rigoll. Real-time ¨ hand gesture detection and classification using convolutional neural networks. CoRR, abs/1901.10323, 2019.
+* G. Devineau, F. Moutarde, W. Xi, and J. Yang. Deep learning for hand gesture recognition on skeletal data. In 2018 13th IEEE International Conference on Automatic Face Gesture Recognition (FG 2018), pages 106–113, May 2018. 2, 6
