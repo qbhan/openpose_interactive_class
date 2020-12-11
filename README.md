@@ -4,6 +4,12 @@ We deliver a body movement & hand gesture detector that can enhance the interact
 ## Demo
 ### Hand Gesture Recognition
 <p align="center"><img src="static/thumbs_down_new.gif" width="33%"><img src="static/thumbs_up_new.gif" width="33%"><img src="static/raise_hand_new.gif" width="33%"></p>
+Our application can recognize hand gestures such as thumbs down, thumbs up, and raise hands (from left to right), sending the corresponding alarm message to the Zoom chat.
+### Body Detection
+<p align="center"><img src="static/movement_webcam.gif" width="33%"><img src="static/multi_webcam.gif" width="33%"><img src="static/absent_webcam.gif" width="33%"></p>
+Our application can detect huge body movements and the number of people on the camera, sending the corresponding alarm message to the Zoom chat.
+
+To see how our application works synchronously with detecting movements and sending messages, check the [link](https://www.youtube.com/watch?v=tICAKQrIidc) for our demo video.
 
 ## Quantitative Results
 <p align="center"><img src="static/MLP_mid12.png" width="33%"><img src="static/MLP_mid2.png" width="33%"><img src="static/MLP_max2.png" width="33%"></p>
