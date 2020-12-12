@@ -52,6 +52,8 @@ We also trained a CNN-based classifier to overcome the disadvantages of the MLP 
 * pytorch (>= 1.6.0 to use model trained on Colab default settings in local environment)
 * npm (for Zoom SDK)
 Caution about Zoom
+* Zoom API (https://marketplace.zoom.us/docs/api-reference/zoom-api)
+ (Build an Zoom OAuth App for authentication: https://marketplace.zoom.us/develop/create)
 
 ## Reference
 * Z. Cao, G. Hidalgo, T. Simon, S. -E. Wei and Y. Sheikh, "OpenPose: Realtime Multi-Person 2D Pose Estimation Using Part Affinity Fields," in IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 1, pp. 172-186, 1 Jan. 2021
