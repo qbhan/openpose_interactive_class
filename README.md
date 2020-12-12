@@ -47,6 +47,10 @@ Considering the real-time setting and relatively small input size, we decided to
 
 We also trained a CNN-based classifier to overcome the disadvantages of the MLP classifier. We used the model architecture from the paper [Deep Learning for Hand Gesture Recognition on Skeletal Data](https://ieeexplore.ieee.org/document/8373818). In this work, they used multi-channel CNN to extract channel-specific features. The channel indicates each coordinate (x, y) of a joint. Each CNN consists of two feature extractors and one residual branch. They produces channel-specific features by concatenating the three outputs. Final MLP layer takes the extracted features as input and predicts the gesture. We modified some minor points of the existing model, such as input/output dimensions and activation function. Check the CNN-based model training code [here (GestureCNN.ipynb)](https://colab.research.google.com/drive/1EgJt0P3w28_fkQxq__0R_s_88VGasuGg#scrollTo=jTqC9q7HPVno).
 
+### Zoom API
+
+In order to use Zoom Web SDK APIs, we built an OAuth app in the zoom marketplace. Then, by its app credentials we generated a base64 encoded credential called authorization code. Next, we made a json file which requests an OAuth token to Zoom. Finally, we were able to send Channel messages by using the http protocol client module in python, with OAuth token as its authentication code. This connection between the Channel and the python file enabled us to send Channel messages whenever the model detects big movements or notices specific hand gestures.
+
 ## Required Installation
 * Openpose (https://github.com/CMU-Perceptual-Computing-Lab/openpose)
 * pytorch (>= 1.6.0 to use model trained on Colab default settings in local environment)
