@@ -207,36 +207,36 @@ try:
             if key not in params: params[key] = next_item
 
     # START THREADS
-    # thread1 = gestureAllThread(0, gestures[0], 0)
-    # thread2 = gestureAllThread(1, gestures[1], 1)
-    # thread3 = gestureAllThread(2, gestures[2], 2)
-    # thread4 = gestureAllThread(3, gestures[3], 3)
-    # thread5 = gestureAllThread(4, gestures[4], 4)
-    #
-    # thread1.start()
-    # thread2.start()
-    # thread3.start()
-    # thread4.start()
-    # thread5.start()
+    thread1 = gestureAllThread(0, gestures[0], 0)
+    thread2 = gestureAllThread(1, gestures[1], 1)
+    thread3 = gestureAllThread(2, gestures[2], 2)
+    thread4 = gestureAllThread(3, gestures[3], 3)
+    thread5 = gestureAllThread(4, gestures[4], 4)
+
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
+    thread5.start()
 
     # threads for gesture1
-    folders = next(os.walk(root_dir + "/" + gestures[0]))[1]
-    length = len(folders)
-    print(length)
-    thread_num = 5
-    sublen = length//thread_num
-    rem = length % thread_num
-    print(sublen)
-    threads = []
-    start = 0
-    for i in range(thread_num):
-        threads.append(gestureThread(i, gestures[0], folders[start:start + sublen if i != thread_num-1 else length+rem]))
-        print(len(folders[start:start + sublen if i != thread_num - 1 else length + rem]))
-        start += sublen
-
-
-    for i in range(thread_num):
-        threads[i].start()
+    # folders = next(os.walk(root_dir + "/" + gestures[0]))[1]
+    # length = len(folders)
+    # print(length)
+    # thread_num = 5
+    # sublen = length//thread_num
+    # rem = length % thread_num
+    # print(sublen)
+    # threads = []
+    # start = 0
+    # for i in range(thread_num):
+    #     threads.append(gestureThread(i, gestures[0], folders[start:start + sublen if i != thread_num-1 else length+rem]))
+    #     print(len(folders[start:start + sublen if i != thread_num - 1 else length + rem]))
+    #     start += sublen
+    #
+    #
+    # for i in range(thread_num):
+    #     threads[i].start()
 
     print('Exiting Main Thread')
 
