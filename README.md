@@ -26,6 +26,7 @@ Confusion matrices of each model. The upper line shows the results of the MLP cl
 Process of our application. Motion detection and gesture recognition are independent of each other. Both tasks use OpenPose to get the keypoints. Motion detection is based on pre-defined metrics which are manually designed. Gesture recognition is done by a classifier. We implemented two different classifiers.
 
 ### Data preprocessing
+We extracted hand keypoints from the Jester dataset images using OpenPose. Check CSV Maker.py and data2csv.py for more details.
 To improve the training quality, we first preprocessed the dataset in two ways: normalizing and modifying the length of sequence.
 #### 1. Normalizing
 We normalized the x, y coordinates of the hand keypoints in each frame to force the model to learn only the gesture, not the location of hand on the image. Normalization process also allows the model to be applied regardless of the resolution of the video.
